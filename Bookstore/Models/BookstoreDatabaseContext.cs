@@ -20,5 +20,7 @@ namespace Bookstore.Models
         }
 
         public DbSet<Book> Books { get; set; }
+        public DbSet<PurchaseItem> PurchaseItems { get; set; }
     }
 }
+

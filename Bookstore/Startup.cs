@@ -1,5 +1,6 @@
 using Bookstore.Models;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Session;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -33,6 +34,15 @@ namespace Bookstore
            });
 
             services.AddScoped<IBookstoreRepository, EFBookstoreRepository>();
+            services.AddScoped<IPurchaseRepository, EFPurchaseRepository > ();
+
+            services.AddRazorPages();
+
+            services.AddDistributedMemoryCache();
+            services.AddSession();
+            services.AddScoped<Basket>(x => SessionBasket.GetBasket(x));
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -45,11 +55,28 @@ namespace Bookstore
 
             //corresponds to the wwwroot 
             app.UseStaticFiles();
+            app.UseSession();
             app.UseRouting();
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapControllerRoute(
+                     "categorypage", pattern:"{bookCategory}/Page{pageNum}", 
+                     new {Controller ="Home", action="Index"});
+
+                endpoints.MapControllerRoute(
+                    name: "Paging",
+                    pattern: "{pageNum}",
+                    defaults: new { controller = "Home", action = "Index", pageNum=1 }
+                    );
+
+                endpoints.MapControllerRoute("category", "bookCategory",
+                    new { Controller = "Home", action = "Index", pageNum=1});
+
+                
                 endpoints.MapDefaultControllerRoute();
+
+                endpoints.MapRazorPages();
             });
         }
     }
